@@ -18,7 +18,7 @@ class ShellWT(Wox):
             with open(HistoryFilePath,mode='w') as f:
                 f.write(str(dict()))
         with open(HistoryFilePath, mode='r') as f:
-            history = {"a":json.load(f)}
+            history = json.load(f)
         result = list()
         foundInHistory = False
         for data in history.keys():
