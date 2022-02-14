@@ -1,0 +1,12 @@
+{
+  "ID": "3681449A25826C29DF667332F395ABC2",
+  "ActionKeyword": ">>",
+  "Name": "ShellWT",
+  "Description": "ShellWT",
+  "Author": "Wayne Custaf Laqinoa Ferdon",
+  "Version": "1.0.0",
+  "Language": "python",
+  "Website": "https://www.github.com/wayneferdon",
+  "IcoPath": "./Images/shellIcon.png",
+  "ExecuteFileName": "main.py"
+}
