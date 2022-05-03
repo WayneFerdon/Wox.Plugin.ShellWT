@@ -118,10 +118,11 @@ class ShellWT(Wox):
 
     @classmethod
     def Run(cls, cmd, isRunAsAdministrator):
+        cmd = 'wt powershell ' + cmd + '\npause'
         if isRunAsAdministrator:
-            subprocess.Popen("sudo -n wt powershell -NoExit " + cmd + "", cwd=os.getenv("SystemRoot")+"\system32")
-        else:
-            subprocess.Popen('wt powershell -NoExit ' + cmd, cwd=os.getenv("SystemRoot")+"\system32")
+            cmd = 'sudo -n ' +cmd
+        
+        subprocess.Popen(cmd, cwd=os.getenv("SystemRoot")+"\system32")
         if not os.path.isfile(HistoryFilePath):
             with open(HistoryFilePath,mode='w') as f:
                 f.write(str(dict()))
