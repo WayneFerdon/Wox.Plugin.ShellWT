@@ -1,17 +1,28 @@
+# ----------------------------------------------------------------
+# Author: wayneferdon wayneferdon@hotmail.com
+# Date: 2022-02-12 06:25:55
+# LastEditors: wayneferdon wayneferdon@hotmail.com
+# LastEditTime: 2022-10-05 18:31:10
+# FilePath: \Wox.Plugin.ShellWT\main.py
+# ----------------------------------------------------------------
+# Copyright (c) 2022 by Wayne Ferdon Studio. All rights reserved.
+# Licensed to the .NET Foundation under one or more agreements.
+# The .NET Foundation licenses this file to you under the MIT license.
+# See the LICENSE file in the project root for more information.
+# ----------------------------------------------------------------
+
 # -*- coding: utf-8 -*-
-from math import fabs
+
 import os
-from wox import Wox, WoxAPI
+from WoxQuery import *
 import subprocess   
 import json
 
 PackageDir = os.path.join(os.environ['localAppData'.upper()],'Packages')
-
 HistoryFilePath = './History.json'
 
-class ShellWT(Wox):
-    @classmethod
-    def query(cls, queryString):
+class ShellWT(WoxQuery):
+    def query(self, queryString):
         icon = './Images/terminal.ico'
         history = dict()
         if not os.path.isfile(HistoryFilePath):
@@ -23,55 +34,17 @@ class ShellWT(Wox):
         foundInHistory = False
         for data in history.keys():
             if queryString in data:
-                result.append({
-                    'Title': data,
-                    'SubTitle': 'Has been run ' + json.dumps(history[data]) + ' times before.',
-                    'IcoPath': icon,
-                    'ContextData': data,
-                    'JsonRPCAction': {
-                        'method': 'Run',
-                        'parameters': [data,False],
-                        "doNotHideAfterAction".replace('oNo', 'on'): False
-                    }
-                })
+                subTitle = 'Has been run ' + json.dumps(history[data]) + ' times before.'
+                result.append(WoxResult(data, subTitle, icon, data, self.Run.__name__, True, data, False).toDict())
                 if queryString == data:
                     foundInHistory = True
 
         if not foundInHistory:
-             result.append({
-                'Title': queryString,
-                'SubTitle': 'Press Enter to Run',
-                'IcoPath': icon,
-                'ContextData': queryString,
-                'JsonRPCAction': {
-                    'method': 'Run',
-                    'parameters': [queryString,False],
-                    "doNotHideAfterAction".replace('oNo', 'on'): False
-                }
-            })
+            result.append(WoxResult(queryString, 'Press Enter to Run', icon, queryString, self.Run.__name__, True, queryString, False).toDict())
 
-        runPowerShell = {
-            'Title': 'Run Windows PowerShell' ,
-            'SubTitle': 'Press Enter to Run',
-            'IcoPath': icon,
-            'ContextData': '>>PowerShell',
-            'JsonRPCAction': {
-                'method': 'RunPowerShell',
-                'parameters': [False],
-                "doNotHideAfterAction".replace('oNo', 'on'): False
-            }
-        }
-        runCMD = {
-            'Title': 'Run CMD' ,
-            'SubTitle': 'Press Enter to Run',
-            'IcoPath': icon,
-            'ContextData': '>>CMD',
-            'JsonRPCAction': {
-                'method': 'RunCMD',
-                'parameters': [False],
-                "doNotHideAfterAction".replace('oNo', 'on'): False
-            }
-        }
+        runPowerShell = WoxResult('Run Windows PowerShell', 'Press Enter to Run', icon, '> PowerShell', self.RunPowerShell.__name__, True, False).toDict()
+        runCMD = WoxResult('Run CMD', 'Press Enter to Run', icon, '> CMD', self.RunCMD.__name__, True, False).toDict()
+
         runResult =  [runPowerShell,runCMD]
         if queryString == '':
             return runResult
@@ -83,38 +56,18 @@ class ShellWT(Wox):
     def context_menu(self, queryString):
         iconPath = './Images/terminal.ico'
         iconPath = os.path.join(os.path.abspath('./'),iconPath)
-        if queryString == '>>PowerShell':
-            return [{
-                'Title': 'Run Windows PowerShell as Administrator' ,
-                'SubTitle': 'Press Enter to Run as Administrator',
-                'IcoPath': iconPath,
-                'JsonRPCAction': {
-                    'method': 'RunPowerShell',
-                    'parameters': [True],
-                    "doNotHideAfterAction".replace('oNo', 'on'): False
-                }
-            }]
-        elif queryString == '>>CMD':
-            return  [{
-                'Title': 'Run CMD as Administrator' ,
-                'SubTitle': 'Press Enter to Run as Administrator',
-                'IcoPath': iconPath,
-                'JsonRPCAction': {
-                    'method': 'RunCMD',
-                    'parameters': [True],
-                    "doNotHideAfterAction".replace('oNo', 'on'): False
-                }
-            }]
-        return  [{
-            'Title': queryString,
-            'SubTitle': 'Press Enter to Run as Administrator',
-            'IcoPath': iconPath,
-            'JsonRPCAction': {
-                'method': 'Run',
-                'parameters': [queryString,True],
-                "doNotHideAfterAction".replace('oNo', 'on'): False
-            }
-        }]
+        subTitle = 'Press Enter to Run as Administrator'
+        if '>' not in queryString:
+            title = queryString
+            method = self.Run.__name__
+            return [WoxResult(title, subTitle, iconPath, None, method, True, queryString, True).toDict()]
+        if queryString == '> PowerShell':
+            title = 'Run Windows PowerShell as Administrator'
+            method = self.RunPowerShell.__name__
+        elif queryString == '> CMD':
+            title = 'Run CMD PowerShell as Administrator'
+            method = self.RunCMD.__name__
+        return [WoxResult(title, subTitle, iconPath, None, method, True, True).toDict()]
 
     @classmethod
     def Run(cls, cmd, isRunAsAdministrator):
