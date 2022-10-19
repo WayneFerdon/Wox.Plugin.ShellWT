@@ -7,6 +7,6 @@
   "Version": "1.0.0",
   "Language": "python",
   "Website": "https://www.github.com/wayneferdon",
-  "IcoPath": "./Images/shellIcon.png",
+  "IcoPath": "./Images/terminal.ico",
   "ExecuteFileName": "main.py"
 }
